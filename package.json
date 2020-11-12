@@ -12,6 +12,10 @@
     "build": "run-p build:*",
     "watch": "run-p watch:*"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yami-beta/lerna-changelog-sample.git"
+  },
   "dependencies": {
     "@types/react": "^16.9.56",
     "@types/react-dom": "^16.9.9",
