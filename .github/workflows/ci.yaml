@@ -1,6 +1,12 @@
 name: ci
 
-on: push
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - 'release/v[0-9]+\.[0-9]+\.[0-9]+'
 
 jobs:
   build:
@@ -13,6 +19,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -20,4 +28,11 @@ jobs:
     - run: yarn install --frozen-lockfile
     - run: yarn lint
     - run: yarn build
-
+    - if: matrix.node-version == '12.x'
+      run: |
+        latestTag=$(curl -s \
+          --header 'Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+          https://api.github.com/repos/yami-beta/lerna-changelog-sample/tags | jq -r .[0].name)
+        yarn lerna-changelog --from ${latestTag}
+      env:
+        GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
