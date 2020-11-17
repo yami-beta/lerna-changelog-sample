@@ -32,12 +32,12 @@ jobs:
           GIT_AUTHOR_NAME: ${{ github.actor }}
           GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
           NEW_VERSION: ${{ github.event.inputs.version }}
-          BRANCH_NAME: release/v${{ github.event.inputs.version }}
+          BRANCH_NAME: version/v${{ github.event.inputs.version }}
       - uses: actions/github-script@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            github.pull.create({
+            github.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               title: `chore: v${process.env.NEW_VERSION}`,
@@ -46,5 +46,5 @@ jobs:
             })
         env:
           NEW_VERSION: ${{ github.event.inputs.version }}
-          BRANCH_NAME: release/v${{ github.event.inputs.version }}
+          BRANCH_NAME: version/v${{ github.event.inputs.version }}
 
