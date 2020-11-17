@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Use Node.js v12
         uses: actions/setup-node@v1
         with:
@@ -33,6 +35,14 @@ jobs:
           GIT_AUTHOR_EMAIL: ${{ github.actor }}@users.noreply.github.com
           NEW_VERSION: ${{ github.event.inputs.version }}
           BRANCH_NAME: version/v${{ github.event.inputs.version }}
+      - name: Generate changelog
+        id: generate-changelog
+        run: |
+          CHANGELOG=$($(yarn bin)/lerna-changelog --next-version ${NEW_VERSION})
+          echo "::set-output name=changelog::${CHANGELOG}"
+        env:
+          GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ github.event.inputs.version }}
       - uses: actions/github-script@v3
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -42,9 +52,11 @@ jobs:
               repo: context.repo.repo,
               title: `chore: v${process.env.NEW_VERSION}`,
               head: process.env.BRANCH_NAME,
-              base: "master"
+              base: "master",
+              body: process.env.CHANGELOG
             })
         env:
           NEW_VERSION: ${{ github.event.inputs.version }}
           BRANCH_NAME: version/v${{ github.event.inputs.version }}
+          CHANGELOG: ${{ steps.generate-changelog.outputs.changelog }}
 
