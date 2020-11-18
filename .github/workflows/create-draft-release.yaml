@@ -8,7 +8,7 @@ on:
 
 jobs:
   create-draft-release:
-    if: github.event.pull_request.merged == true && startsWith(github.head_ref, "version/v")
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'version/v')
     runs-on: ubuntu-latest
 
     steps:
