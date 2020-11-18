@@ -1,0 +1,41 @@
+name: create-draft-release
+
+on:
+  pull_request:
+    branches:
+      - master
+    types: [closed]
+
+jobs:
+  create-draft-release:
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'version/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Use Node.js v12
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn build
+      - name: Prepare release
+        run: |
+          NEW_VERSION=$(node -p 'require("./package.json").version')
+          echo "TAG_NAME=v${NEW_VERSION}" >> $GITHUB_ENV
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          $(yarn bin)/lerna-changelog --next-version ${NEW_VERSION} >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: ${{ env.TAG_NAME }}
+          body: ${{ env.CHANGELOG }}
+          draft: true
+          prerelease: false
+
