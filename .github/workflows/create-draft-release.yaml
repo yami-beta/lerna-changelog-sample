@@ -24,13 +24,13 @@ jobs:
       - run: yarn build
       - name: Prepare release
         run: |
-          git rev-parse HEAD
-          echo ${{ github.event.pull_request.head.sha }}
           NEW_VERSION=$(node -p 'require("./package.json").version')
           echo "TAG_NAME=v${NEW_VERSION}" >> $GITHUB_ENV
           echo "CHANGELOG<<EOF" >> $GITHUB_ENV
           $(yarn bin)/lerna-changelog --next-version ${NEW_VERSION} >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
+        env:
+          GITHUB_AUTH: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
